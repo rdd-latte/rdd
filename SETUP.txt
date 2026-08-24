@@ -1,0 +1,14 @@
+CUSTOM RDD SETUP
+
+1. Upload every file and folder in this package to the root of your site.
+2. Put your existing ZIP beside index.html with this exact filename:
+
+   LIVE-WindowsPlayer-version-acc4b74f79e743b9.zip
+
+3. Do not put that ZIP inside the js folder.
+4. Keep the filename's capitalization exactly the same.
+
+All three Roblox download buttons and all permanent/query links download that
+same ZIP. The WebLauncher button remains the fork's original external link.
+
+To change the fixed ZIP later, edit FIXED_ZIP_FILE near the top of js/rdd.js.
