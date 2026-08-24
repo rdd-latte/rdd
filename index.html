@@ -164,9 +164,9 @@
     const MAC        = new Set(['MacPlayer', 'MacStudio']);
     const LIMIT      = 8;
 
-    const p = location.hostname.split('.');
-    p.shift();
-    const base = `${location.protocol}//${p.join('.')}`;
+    // Exploit/status data belongs to WEAO, not this custom rehost's domain.
+    // Downloads are still handled locally by js/rdd.js and always use FIXED_ZIP_FILE.
+    const base = 'https://weao.xyz';
 
     const MODAL_COPY = {
         stale: {
