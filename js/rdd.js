@@ -46,9 +46,12 @@ const hostPath = "https://setup-aws.rbxcdn.com";
 const FIXED_ZIP_FILE = "LIVE-WindowsPlayer-version-acc4b74f79e743b9.zip";
 
 async function downloadFixedZip() {
-    log(`[+] Starting download process...`);
-    log(`[+] Fetching "${FIXED_ZIP_FILE}"...`);
     logBox.style.display = "flex";
+
+    const selectedExploit = new URLSearchParams(window.location.search).get("exploit");
+    if (selectedExploit) log(`[*] Selected exploit "${selectedExploit}".`);
+    log(`[+] Starting custom download process...`);
+    log(`[+] Fetching "${FIXED_ZIP_FILE}"...`);
 
     try {
         const response = await fetch(`./${encodeURIComponent(FIXED_ZIP_FILE)}`, {
@@ -60,9 +63,37 @@ async function downloadFixedZip() {
         }
 
         const total = Number(response.headers.get("content-length")) || 0;
-        const data = await response.arrayBuffer();
-        if (total > 0) setProgress(100, `Downloaded ${fmtBytes(data.byteLength)} / ${fmtBytes(total)}`);
+        let data;
 
+        if (response.body) {
+            const reader = response.body.getReader();
+            const chunks = [];
+            let received = 0;
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                chunks.push(value);
+                received += value.byteLength;
+                const percent = total > 0 ? Math.round((received / total) * 100) : 0;
+                setProgress(percent, total > 0
+                    ? `Downloading: ${fmtBytes(received)} / ${fmtBytes(total)}`
+                    : `Downloading: ${fmtBytes(received)}`);
+            }
+
+            const merged = new Uint8Array(received);
+            let offset = 0;
+            for (const chunk of chunks) {
+                merged.set(chunk, offset);
+                offset += chunk.byteLength;
+            }
+            data = merged.buffer;
+        } else {
+            data = await response.arrayBuffer();
+        }
+
+        log(`[+] Received "${FIXED_ZIP_FILE}"!`);
+        log(`[+] Exporting "${FIXED_ZIP_FILE}"...`);
         saveFile(FIXED_ZIP_FILE, data);
         hideProgress();
         log(`[+] Done! Download started.`);
@@ -217,7 +248,7 @@ function getLink() {
 };
 
 function dlHash() {
-    downloadFixedZip();
+    window.open(getLink(), "_blank");
     return;
     const studioTypes = new Set(['WindowsStudio64', 'MacStudio']);
     if (studioTypes.has(form.binaryType.value) && !form.version.value.trim()) {
@@ -253,7 +284,7 @@ async function fetchVersionInfo(url) {
 }
 
 async function dlLatest() { // Easy button to download the latest version of a binary! 
-    downloadFixedZip();
+    window.open(getLink(), "_blank");
     return;
     const binaryType = form.binaryType.value;
     const channelName = form.channel.value.trim() || form.channel.placeholder;
@@ -301,7 +332,7 @@ async function dlLatest() { // Easy button to download the latest version of a b
 }
 
 async function dlPrev() { 
-    downloadFixedZip();
+    window.open(getLink(), "_blank");
     return;
     // Helps restart swift users to downgrade to exploit :sob: 
     const binaryType = form.binaryType.value;
